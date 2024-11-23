@@ -46,41 +46,42 @@ def clickDown_video():
         #print(yt.streams.filter)
         video_stream = yt.streams.filter(file_extension='mp4', res=getvideo, adaptive=True).first()
         audio_stream = yt.streams.filter(file_extension='mp4', res="360p").first()
-        
-        print("正在下載影像流...")
-        labelMsg.config(text="正在下載影像流...")
-        video_stream.download(output_path="output_dir", filename="video")
-        video_path = os.path.join("output_dir/video.mp4")
-        print("影像下載完成！")
-        labelMsg.config(text="影像下載完成！")
 
-        print("正在下載音訊流...")
-        labelMsg.config(text="正在下載音訊流...")
-        audio_stream.download(output_path="output_dir", filename="audio")    
-        input_path = os.path.join("output_dir/audio.mp4")
-        convert_mp4_to_m4a("output_dir/audio.mp4", "output_dir/audio.m4a")
-        audio_path = os.path.join("output_dir/audio.m4a")
-        print("音訊下載完成！")
-        labelMsg.config(text="音訊下載完成！")
+        if os.path.exists( f"output_dir/{yt.title}.mp4") == False:
+            print("正在下載影像流...")
+            labelMsg.config(text="正在下載影像流...")
+            video_stream.download(output_path="output_dir", filename="video")
+            video_path = os.path.join("output_dir/video.mp4")
+            print("影像下載完成！")
+            labelMsg.config(text="影像下載完成！")
 
-        output_path = os.path.join(f"output_dir/{yt.title}.mp4")
+            print("正在下載音訊流...")
+            labelMsg.config(text="正在下載音訊流...")
+            audio_stream.download(output_path="output_dir", filename="audio")    
+            input_path = os.path.join("output_dir/audio.mp4")
+            convert_mp4_to_m4a("output_dir/audio.mp4", "output_dir/audio.m4a")
+            audio_path = os.path.join("output_dir/audio.m4a")
+            print("音訊下載完成！")
+            labelMsg.config(text="音訊下載完成！")
 
-        print("正在合併影像和音訊...")
-        labelMsg.config(text="正在合併影像和音訊...")
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-i", video_path,        # 視訊輸入
-            "-i", audio_path,        # 音訊輸入
-            "-c:v", "copy",          # 保持原始影像編碼
-            "-c:a", "aac",           # 音訊使用 AAC 編碼
-            "-strict", "experimental",
-            output_path              # 合成後的輸出檔案
-        ]
+            output_path = os.path.join(f"output_dir/{yt.title}.mp4")
 
-        # 執行 FFmpeg 命令
-        subprocess.run(ffmpeg_cmd, check=True)
-        print(f"合成完成！檔案儲存至: {output_path}")
-        labelMsg.config(text=f"合成完成！檔案儲存至: {output_path}")
+            print("正在合併影像和音訊...")
+            labelMsg.config(text="正在合併影像和音訊...")
+            ffmpeg_cmd = [
+                "ffmpeg",
+                "-i", video_path,        # 視訊輸入
+                "-i", audio_path,        # 音訊輸入
+                "-c:v", "copy",          # 保持原始影像編碼
+                "-c:a", "aac",           # 音訊使用 AAC 編碼
+                "-strict", "experimental",
+                output_path              # 合成後的輸出檔案
+            ]
+
+            # 執行 FFmpeg 命令
+            subprocess.run(ffmpeg_cmd, check=True)
+            print(f"合成完成！檔案儲存至: {output_path}")
+            labelMsg.config(text=f"合成完成！檔案儲存至: {output_path}")
         os.remove(video_path)
         os.remove(audio_path)
         os.remove(input_path)
@@ -90,8 +91,15 @@ def clickDown_video():
             print("下載完成!")
             labelMsg.config(text="下載完成!")
 
+        elif os.path.exists( f"output_dir/{yt.title}.mp4") == True:
+            print("已有此檔案!")
+
     except:
-        labelMsg.config(text="影片無法下載!")
+        if os.path.exists( f"output_dir/{yt.title}.mp4") == True:
+            print("已有此檔案!")
+            labelMsg.config(text="已有此檔案!")
+        else:
+            labelMsg.config(text="影片無法下載!")
     
     
 def clickDown_audio():
@@ -115,9 +123,15 @@ def clickDown_audio():
         labelMsg.config(text="正在下載音訊流...")
         audio_stream.download(output_path="output_dir", filename="audio")    
         input_path = os.path.join("output_dir/audio.mp4")
-        convert_mp4_to_m4a("output_dir/audio.mp4", f"output_dir/{yt.title}.m4a")
-        audio_path = os.path.join(f"output_dir/{yt.title}.m4a")
-        print("音訊下載完成！")
+
+        if os.path.exists( f"output_dir/{yt.title}.m4a") == False:
+            convert_mp4_to_m4a("output_dir/audio.mp4", f"output_dir/{yt.title}.m4a")
+            audio_path = os.path.join(f"output_dir/{yt.title}.m4a")
+            print("音訊下載完成！")
+        elif os.path.exists( f"output_dir/{yt.title}.m4a") == True:
+            print("已有此檔案!")
+
+        os.remove(input_path)
         full_path = os.path.join(audio_path)
         if os.path.exists(full_path):
             print("下載完成!")
@@ -125,7 +139,11 @@ def clickDown_audio():
         os.remove(input_path)
     
     except:
-        labelMsg.config(text="音訊無法下載!")
+        if os.path.exists( f"output_dir/{yt.title}.m4a") == True:
+            print("已有此檔案!")
+            labelMsg.config(text="已有此檔案!")
+        else:
+            labelMsg.config(text="音訊無法下載!")
     
 
 win = tk.Tk()
